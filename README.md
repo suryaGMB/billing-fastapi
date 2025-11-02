@@ -23,9 +23,4 @@ The app allows:
 
 ---
 
-### 🧰 Project Setup & Installation
 
-#### 1️⃣ Clone or Download the Project
-```bash
-git clone https://github.com/<your-username>/billing-fastapi.git
-cd billing-fastapi
