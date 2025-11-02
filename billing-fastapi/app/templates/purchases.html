@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Purchases</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin:20px; max-width:900px; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border:1px solid #ddd; padding:8px; }
+  </style>
+</head>
+<body>
+  <h1>Customer Purchases</h1>
+
+  <form id="search-form" method="get" action="/purchases">
+    <label>Customer Email: <input type="email" name="email" value="{{ email or '' }}" required/>
+      <button type="submit">Search</button>
+    </label>
+  </form>
+
+  {% if bills %}
+    <table>
+      <thead><tr><th>Bill ID</th><th>Date</th><th>Total</th><th>Paid</th><th>Change Given</th></tr></thead>
+      <tbody>
+        {% for b in bills %}
+          <tr>
+            <td><a href="/api/bill/{{ b.id }}">{{ b.id }}</a></td>
+            <td>{{ b.created_at }}</td>
+            <td>{{ "%.2f"|format(b.total_with_tax) }}</td>
+            <td>{{ "%.2f"|format(b.paid_amount) }}</td>
+            <td>{{ "%.2f"|format(b.change_given) }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No bills found. Use the search above to find purchases by email.</p>
+  {% endif %}
+</body>
+</html>

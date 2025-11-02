@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Billing - FastAPI</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; max-width: 900px; }
+    label { display:block; margin:8px 0; }
+    input[type="text"], input[type="email"], input[type="number"] { padding:6px; width:240px; }
+    .row { margin-bottom: 8px; }
+    .items-row { margin-bottom:6px; padding:8px; border:1px solid #eee; border-radius:6px; display:flex; gap:8px; align-items:center;}
+    button { padding:8px 12px; cursor:pointer; }
+    #result { margin-top: 16px; white-space:pre-wrap; background:#f7f7f7; padding:10px; border-radius:6px; }
+    .denom-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+    .denom { border:1px solid #eee; padding:6px; border-radius:6px; }
+  </style>
+  <script src="/static/js/billing.js" defer></script>
+</head>
+<body>
+  <h1>Billing Page</h1>
+
+  <form id="billing-form" onsubmit="return false;">
+    <label>
+      Customer Email:
+      <input type="email" id="customer_email" placeholder="customer@example.com" required/>
+    </label>
+
+    <h3>Products</h3>
+    <div id="items-container"></div>
+    <div style="margin:6px 0;">
+      <button id="add-item">Add New Product</button>
+    </div>
+
+    <h3>Denominations (shop drawer counts)</h3>
+    <div id="denominations" class="denom-grid"></div>
+
+    <label>
+      Paid Amount:
+      <input type="number" id="paid_amount" step="0.01" placeholder="0.00" required/>
+    </label>
+
+    <div style="margin-top:12px;">
+      <button id="generate-bill">Generate Bill</button>
+      <button id="view-purchases">View Purchases</button>
+    </div>
+  </form>
+
+  <div id="result"></div>
+</body>
+</html>

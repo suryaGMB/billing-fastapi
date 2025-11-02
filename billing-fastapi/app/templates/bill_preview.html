@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Invoice - {{ bill.id }}</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;color:#222;margin:18px;}
+    .container{max-width:1000px;margin:0 auto;border:1px solid #ddd;padding:18px;}
+    header{text-align:center;margin-bottom:12px;}
+    header h1{margin:0;font-size:18px;letter-spacing:1px;}
+    .top-row{display:flex;gap:18px;align-items:flex-start;}
+    .left{flex:1;}
+    .right{width:320px;}
+    table{width:100%;border-collapse:collapse;margin-top:6px;}
+    th,td{border:1px solid #e6e6e6;padding:8px;font-size:13px;}
+    th{background:#f5f5f5;font-weight:600;font-size:13px;}
+    .right table{border:none}
+    .right td{border:none;padding:6px 8px;text-align:right}
+    .right .label{ text-align:left; color:#444; }
+    .summary { margin-top:6px; display:flex; justify-content:flex-end; }
+    .summary-box{ width:320px; border:1px solid #eee; padding:12px; border-radius:4px; background:#fafafa; }
+    .summary-row{ display:flex; justify-content:space-between; padding:6px 0; }
+    .summary-row strong{ font-weight:700; }
+    .denom-box{ margin-top:18px; border-top:1px solid #ddd; padding-top:18px; display:flex; justify-content:flex-end; gap:18px; }
+    .denom-card{ width:360px; border:1px solid #eee; padding:12px; border-radius:6px; background:#fff; }
+    .denom-title{ text-align:center; font-weight:700; margin-bottom:10px; color:#333; }
+    .denom-list{ display:flex; flex-direction:column; gap:6px; align-items:flex-end; font-family:monospace; }
+    .muted{ color:#666; font-size:13px; }
+    .small{ font-size:12px; color:#666; }
+    .right .total-big{ font-size:18px; font-weight:700; text-align:right; margin-top:6px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+        <strong>Customer Email:</strong>
+        <span class="muted" style="font-weight:700; color:#000;">{{ customer_email if customer_email else '—' }}</span>
+    </header>
+
+    {# prepare numeric values for calculation #}
+    {% set total_wo = bill.total_without_tax | float %}
+    {% set total_tax = bill.total_tax | float %}
+    {% set total_with = bill.total_with_tax | float %}
+    {% set paid = bill.paid_amount | float %}
+    {% set change_given = bill.change_given | float %}
+
+    {# net price of purchased items = total_with (includes tax) #}
+    {% set net_price = total_with %}
+    {# rounded down value (truncate fractional rupees) #}
+    {% set rounded_down = (total_with | float) | int %}
+    {# balance payable to customer = paid - rounded_down (money to return) #}
+    {% set balance_payable = (paid - rounded_down) if (paid - rounded_down) > 0 else 0 %}
+    {% set balance_payable = ('%.2f' % balance_payable) %}  {# format to 2 decimals #}
+
+    <div class="top-row">
+      <div class="left">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:16%;">Product ID</th>
+              <th style="width:12%;">Unit Price</th>
+              <th style="width:10%;">Quantity</th>
+              <th style="width:14%;">Purchase Price</th>
+              <th style="width:12%;">Tax %</th>
+              <th style="width:18%;">Tax payable</th>
+              <th style="width:18%;">Total price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for itm in items %}
+            {% set unit = itm.unit_price | float %}
+            {% set qty = itm.quantity | int %}
+            {% set line = itm.line_total | float %}
+            {% set tax_amt = itm.tax | float %}
+            <tr>
+              <td>{{ itm.product_id }}</td>
+              <td>₹{{ '%.2f' % unit }}</td>
+              <td>{{ qty }}</td>
+              <td>₹{{ '%.2f' % line }}</td>
+              <td>{{ '%.2f' % (itm.tax_percentage | float) }}%</td>
+              <td>₹{{ '%.2f' % tax_amt }}</td>
+              <td>₹{{ '%.2f' % (line + tax_amt) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="right">
+        <div class="summary-box">
+          <div class="summary-row"><div class="label">Total price without tax:</div><div>₹{{ '%.2f' % total_wo }}</div></div>
+          <div class="summary-row"><div class="label">Total tax payable:</div><div>₹{{ '%.2f' % total_tax }}</div></div>
+          <div class="summary-row"><div class="label">Net price of the purchased item:</div><div>₹{{ '%.2f' % net_price }}</div></div>
+          <div class="summary-row"><div class="label">Rounded down value of the purchased items net price:</div><div>₹{{ '%.2f' % rounded_down }}</div></div>
+          <div class="summary-row"><div class="label">Balance payable to the customer:</div><div>₹{{ '%.2f' % change_given }}</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="denom-box">
+      <div class="denom-card">
+        <div class="denom-title">Balance Denomination</div>
+        <div class="muted" style="text-align:center; margin-bottom:8px;">(Denominations returned to customer)</div>
+        <div class="denom-list">
+          {# show only denominatons with count > 0, in descending order #}
+          {% for d in ['2000','500','200','100','50','20','10','5','2','1'] %}
+            {% set cnt = (change.get(d) if change.get(d) is not none else change.get(d|int) ) %}
+            {% if cnt %}
+              <div>₹{{ d }} : {{ cnt }}</div>
+            {% endif %}
+          {% endfor %}
+          {% if not change %}
+            <div class="small">No change distribution available.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:center; margin-top:20px; margin-bottom:12px;">
+      <button id="reset-preview" type="button"
+        style="padding:10px 18px; border-radius:8px; border:1px solid #ddd; background:#fff; cursor:pointer; font-weight:600;">
+        ← Reset
+      </button>
+    </div>
+
+  </div>
+</body>
+</html>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.getElementById("reset-preview");
+    if (!btn) return;
+    btn.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      if (confirm("Go back to billing page and reset the form?")) {
+        window.location.href = "/";
+      }
+    });
+  });
+</script>
