@@ -43,5 +43,15 @@ FROM_EMAIL=no-reply@example.com
 
 - python -m app.email_utils
 
+## 🧠 PowerShell Script Policy (Windows Users)
+
+If you're running this project on **Windows PowerShell**, you may see this error while activating the virtual environment:
+
+### ✅ Fix
+To allow PowerShell to run virtual environment activation scripts, run this **once** (no admin needed):
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+
 # Run the FastAPI Server
 - uvicorn app.main:app --reload
