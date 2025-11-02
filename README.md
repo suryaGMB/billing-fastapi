@@ -23,4 +23,25 @@ The app allows:
 
 ---
 
+### Instructions to Run the Project
 
+- Clone or Download the Project
+- cd billing-fastapi
+- python -m venv .venv
+- .\.venv\Scripts\activate
+- pip install -r requirements.txt
+- create .env file
+
+DATABASE_URL=sqlite:///./billing.db
+
+# Email config (optional)
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+FROM_EMAIL=no-reply@example.com
+
+- python -m app.email_utils
+
+# Run the FastAPI Server
+- uvicorn app.main:app --reload
